@@ -1,0 +1,12 @@
+
+tg_host: api.telegram.org
+router:
+  port: 8080
+  token_lifespan: 5 # Hours
+  secret_key: megasecret
+storage:
+  host: localhost
+  port: 5432
+  database: postgres
+  username: postgres
+  password: postgres
