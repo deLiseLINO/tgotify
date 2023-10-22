@@ -29,9 +29,7 @@ func (a *ClientApi) CreateClient(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	uid, err := authentication.ExtractTokenID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to get user ID",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -39,9 +37,7 @@ func (a *ClientApi) CreateClient(c *gin.Context) {
 	var cl ClientInput
 	err = c.BindJSON(&cl)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "missing parameters",
-		})
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
@@ -55,11 +51,9 @@ func (a *ClientApi) CreateClient(c *gin.Context) {
 	// Call the database method to create the client.
 	err = a.DB.CreateClient(client)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to create client",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, statusResponse{"ok"})
 }

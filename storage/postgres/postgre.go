@@ -2,10 +2,10 @@ package postgres
 
 import (
 	"fmt"
-	"log"
 	"tgotify/config"
 	models "tgotify/storage"
 
+	"github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -39,9 +39,9 @@ func Connect(config *config.StorageConfig) *gorm.DB {
 	// Open a connection to the PostgreSQL database using GORM.
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("unable to connect to the database")
+		logrus.Fatal("unable to connect to the database")
 	}
-	log.Printf("successfully connected to the database")
+	logrus.Info("successfully connected to the database")
 	return db
 }
 

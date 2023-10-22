@@ -1,13 +1,13 @@
 package api
 
 import (
-	"log"
 	"tgotify/api/handlers"
 	authentication "tgotify/api/handlers/auth"
 	telegram "tgotify/client"
 	"tgotify/storage/postgres"
 
 	"github.com/gin-gonic/gin"
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -38,10 +38,10 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	// Retrieve the router port from the configuration using Viper.
 	port := viper.GetString("router.port")
 	if port == "" {
-		log.Fatal("unable to fetch port from config")
+		logrus.Fatal("unable to fetch port from config")
 	}
 	// Start the Gin router and listen on the specified port.
 	if err := gin.Run(":" + port); err != nil {
-		log.Fatal(err)
+		logrus.Fatal(err)
 	}
 }

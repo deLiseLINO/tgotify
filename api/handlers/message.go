@@ -28,27 +28,21 @@ func (a *MessageApi) CreateMessage(c *gin.Context) {
 	// Extract the 'message' parameter from the HTTP POST request form.
 	message := c.PostForm("message")
 	if message == "" {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "missing 'message' parameter",
-		})
+		newErrorResponse(c, http.StatusBadRequest, "missing `message` parameter")
 		return
 	}
 
 	// Extract the user ID from the JWT token in the request context.
 	uid, err := authentication.ExtractTokenID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to get user ID",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Get a list of enabled clients for the user.
 	clients, err := a.DB.EnabledClients(uid)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to get clients",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -56,13 +50,11 @@ func (a *MessageApi) CreateMessage(c *gin.Context) {
 	for _, client := range clients {
 		for _, chat := range client.Chats {
 			if err := a.Sender.SendMessage(client.Token, chat.ChatID, message); err != nil {
-				c.JSON(http.StatusInternalServerError, gin.H{
-					"error": "failed to send message",
-				})
+				newErrorResponse(c, http.StatusInternalServerError, err.Error())
 				return
 			}
 		}
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, statusResponse{"ok"})
 }

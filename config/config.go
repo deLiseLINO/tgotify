@@ -1,9 +1,9 @@
 package config
 
 import (
-	"log"
 	"os"
 
+	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 )
 
@@ -38,7 +38,7 @@ func (*Config) ReadEnv() {
 
 	// Attempt to read the configuration from the .env file.
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("failed to read .env: %v", err)
+		logrus.Fatalf("failed to read .env: %v", err)
 	}
 }
 
@@ -49,12 +49,12 @@ func (cfg *Config) ReadYaml() {
 
 	// Check if the configPath is empty.
 	if configPath == "" {
-		log.Fatalf("CONFIG_PATH environment variable is not set or is empty")
+		logrus.Fatalf("CONFIG_PATH environment variable is not set or is empty")
 	}
 
 	// Check if the file exists; if not, log an error and exit.
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file path: %s does not exist: %v", configPath, err)
+		logrus.Fatalf("config file path: %s does not exist: %v", configPath, err)
 	}
 
 	// Set the configuration file to the specified YAML file and configure it as YAML format.
@@ -63,11 +63,11 @@ func (cfg *Config) ReadYaml() {
 
 	// Read the configuration from the specified YAML file.
 	if err := viper.ReadInConfig(); err != nil {
-		log.Fatalf("failed to read the config file: %v", err)
+		logrus.Fatalf("failed to read the config file: %v", err)
 	}
 
 	// Unmarshal the configuration into the provided Config structure.
 	if err := viper.Unmarshal(cfg); err != nil {
-		log.Fatalf("failed to unmarshal config: %v", err)
+		logrus.Fatalf("failed to unmarshal config: %v", err)
 	}
 }

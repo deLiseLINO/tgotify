@@ -32,18 +32,14 @@ func (a *UserApi) User(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	userID, err := authentication.ExtractTokenID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to get user ID from token",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Retrieve the user information based on the user ID.
 	user, err := a.DB.GetUserByID(userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to fetch user from the database",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -56,20 +52,16 @@ func (a *UserApi) User(c *gin.Context) {
 func (a *UserApi) CreateUser(c *gin.Context) {
 	// Parse the JSON input data.
 	var userI userInput
-	err := c.ShouldBindJSON(&userI)
+	err := c.BindJSON(&userI)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "missing parameters",
-		})
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Hash the user's password for security.
 	hash, err := bcrypt.GenerateFromPassword([]byte(userI.Password), 10)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "unable to hash the password",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
@@ -79,22 +71,17 @@ func (a *UserApi) CreateUser(c *gin.Context) {
 	// Add the user to the database.
 	err = a.DB.CreateUser(&user)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "failed to create the user",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Generate a token for the user.
 	token, err := authentication.GenerateToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	// Respond with the generated token and a "200 OK" status.
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 	})
@@ -105,60 +92,48 @@ func (a *UserApi) DeleteUser(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	userID, err := authentication.ExtractTokenID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to get user ID",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Call the DeleteUser method from the userDB interface to delete the user by their ID.
 	err = a.DB.DeleteUser(userID)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "unable to delete the user from the database",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{})
+	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
 
 // Signin handles the user sign-in process.
 func (a *UserApi) Signin(c *gin.Context) {
 	// Parse the JSON input data for sign-in.
 	var userI userInput
-	err := c.ShouldBindJSON(&userI)
+	err := c.BindJSON(&userI)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "missing parameters",
-		})
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	// Retrieve the user's information by their name.
 	user, err := a.DB.UserByName(userI.Name)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid email or password",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Compare the provided password with the stored password hash.
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(userI.Password))
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "invalid email or password",
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Generate a token for the authenticated user.
 	token, err := authentication.GenerateToken(user.ID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": err.Error(),
-		})
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
