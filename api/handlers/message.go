@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	authentication "tgotify/api/handlers/auth"
 	models "tgotify/storage"
 
 	"github.com/gin-gonic/gin"
@@ -33,9 +32,9 @@ func (a *MessageApi) CreateMessage(c *gin.Context) {
 	}
 
 	// Extract the user ID from the JWT token in the request context.
-	uid, err := authentication.ExtractTokenID(c)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+	uid := c.GetUint("user_id")
+	if uid == 0 {
+		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
 		return
 	}
 

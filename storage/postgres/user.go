@@ -20,7 +20,7 @@ func (db *Gormdb) CreateUser(user *models.User) error {
 }
 
 // GetUserByID retrieves a user by their ID from the database.
-func (db *Gormdb) GetUserByID(id uint) (*models.User, error) {
+func (db *Gormdb) UserByID(id uint) (*models.User, error) {
 	user := &models.User{}
 	err := db.DB.First(user, id).Error
 	if user.ID == id {
@@ -33,4 +33,15 @@ func (db *Gormdb) GetUserByID(id uint) (*models.User, error) {
 func (db *Gormdb) DeleteUser(id uint) error {
 	err := db.Delete(&models.User{}, id).Error
 	return err
+}
+
+func (db *Gormdb) ChangePassword(uid uint, pass string) error {
+	user := new(models.User)
+	err := db.First(user, uid).Error
+	if err != nil {
+		return err
+	}
+
+	user.Password = pass
+	return db.Save(user).Error
 }

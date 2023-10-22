@@ -32,3 +32,10 @@ type Chat struct {
 	ChatID   uint `gorm:"unique;not null"`
 	ClientID uint `gorm:"foreignkey:ClientID;constraint:OnDelete:CASCADE"`
 }
+
+type ClientResponse struct {
+	ID      uint   `json:"id"`
+	Name    string `json:"name"`
+	Token   string `json:"token"`
+	Enabled string `json:"enabled"`
+}

@@ -11,10 +11,11 @@ import (
 
 // userDB interface defines the methods for interacting with the user database.
 type userDB interface {
-	GetUserByID(id uint) (*models.User, error)
+	UserByID(id uint) (*models.User, error)
 	UserByName(name string) (*models.User, error)
 	CreateUser(user *models.User) error
 	DeleteUser(id uint) error
+	ChangePassword(uid uint, pass string) error
 }
 
 // UserApi is a handler for user-related operations.
@@ -30,14 +31,14 @@ type userInput struct {
 
 func (a *UserApi) User(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
-	userID, err := authentication.ExtractTokenID(c)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+	uid := c.GetUint("user_id")
+	if uid == 0 {
+		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
 		return
 	}
 
 	// Retrieve the user information based on the user ID.
-	user, err := a.DB.GetUserByID(userID)
+	user, err := a.DB.UserByID(uid)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -59,14 +60,14 @@ func (a *UserApi) CreateUser(c *gin.Context) {
 	}
 
 	// Hash the user's password for security.
-	hash, err := bcrypt.GenerateFromPassword([]byte(userI.Password), 10)
+	hashed, err := hashPass(userI.Password)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
 	// Create a new user with the provided information.
-	user := models.User{Name: userI.Name, Password: string(hash)}
+	user := models.User{Name: userI.Name, Password: hashed}
 
 	// Add the user to the database.
 	err = a.DB.CreateUser(&user)
@@ -90,14 +91,14 @@ func (a *UserApi) CreateUser(c *gin.Context) {
 // DeleteUser handles the deletion of a user's account.
 func (a *UserApi) DeleteUser(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
-	userID, err := authentication.ExtractTokenID(c)
-	if err != nil {
-		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+	uid := c.GetUint("user_id")
+	if uid == 0 {
+		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
 		return
 	}
 
 	// Call the DeleteUser method from the userDB interface to delete the user by their ID.
-	err = a.DB.DeleteUser(userID)
+	err := a.DB.DeleteUser(uid)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
@@ -140,4 +141,38 @@ func (a *UserApi) Signin(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"token": token,
 	})
+}
+
+func (a *UserApi) ChangePassword(c *gin.Context) {
+	uid := c.GetUint("user_id")
+	if uid == 0 {
+		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
+		return
+	}
+	pass := c.PostForm("pass")
+	if pass == "" {
+		newErrorResponse(c, http.StatusBadRequest, "missing pass parameter")
+	}
+
+	// Hash the user's password for security.
+	hashed, err := hashPass(pass)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	err = a.DB.ChangePassword(uid, hashed)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+	c.JSON(http.StatusOK, statusResponse{"ok"})
+}
+
+func hashPass(pass string) (string, error) {
+	hash, err := bcrypt.GenerateFromPassword([]byte(pass), 10)
+	if err != nil {
+		return "", err
+	}
+	return string(hash), nil
 }

@@ -27,9 +27,15 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 
 	// Define authenticated routes with corresponding HTTP methods and handler functions.
 	auth.POST("/message", messageHandler.CreateMessage) // Create a new message
-	auth.POST("/client", clientHandler.CreateClient)    // Create a new client
-	auth.GET("/user", userHandler.User)                 // Retrieve user information
-	auth.DELETE("/user", userHandler.DeleteUser)        // Delete a user's account
+
+	auth.POST("/client", clientHandler.CreateClient)   // Create a new client
+	auth.GET("/client", clientHandler.Clients)         // Retrieve all clients info
+	auth.DELETE("/client", clientHandler.DeleteClient) // Deletes client
+	auth.PUT("/client", clientHandler.UpdateClient)    // Updates clent
+
+	auth.GET("/user", userHandler.User)                     // Retrieve user information
+	auth.DELETE("/user", userHandler.DeleteUser)            // Delete a user's account
+	auth.POST("/user/password", userHandler.ChangePassword) // Delete a user's account
 
 	// Define unauthenticated routes.
 	gin.POST("/user", userHandler.CreateUser)    // Create a new user

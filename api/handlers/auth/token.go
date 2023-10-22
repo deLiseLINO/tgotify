@@ -38,30 +38,16 @@ func GenerateToken(userid uint) (string, error) {
 // TokenValid checks the validity of a JWT token in the request context.
 func TokenValid(c *gin.Context) error {
 	tokenString := ExtractToken(c)
-	_, err := parseToken(tokenString)
+	token, err := parseToken(tokenString)
+	if err != nil {
+		return err
+	}
+	id, err := extractTokenID(token)
+	c.Set("user_id", id)
 	if err != nil {
 		return err
 	}
 	return nil
-}
-
-// ExtractTokenID extracts the user ID from a JWT token in the request context.
-func ExtractTokenID(c *gin.Context) (uint, error) {
-	tokenString := ExtractToken(c)
-	token, err := parseToken(tokenString)
-	if err != nil {
-		return 0, err
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if ok && token.Valid {
-		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 32)
-		if err != nil {
-			return 0, err
-		}
-		return uint(uid), nil
-	}
-	return 0, nil
 }
 
 // ExtractToken retrieves a JWT token from the request context.
@@ -75,6 +61,19 @@ func ExtractToken(c *gin.Context) string {
 		return strings.Split(bearerToken, " ")[1]
 	}
 	return ""
+}
+
+// ExtractTokenID extracts the user ID from a JWT token.
+func extractTokenID(token *jwt.Token) (uint, error) {
+	claims, ok := token.Claims.(jwt.MapClaims)
+	if ok && token.Valid {
+		uid, err := strconv.ParseUint(fmt.Sprintf("%.0f", claims["user_id"]), 10, 32)
+		if err != nil {
+			return 0, err
+		}
+		return uint(uid), nil
+	}
+	return 0, nil
 }
 
 // parseToken parses a JWT token with the secret key from the configuration.

@@ -5,6 +5,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const (
+	fetchuid = "unable to get user id from token"
+)
+
 type errorResponse struct {
 	Message string `json:"message"`
 }
