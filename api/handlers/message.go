@@ -12,18 +12,18 @@ type MessageSender interface {
 	SendMessage(token string, chatID uint, message string) error
 }
 
-// MessageDb is an interface for database operations related to messages.
-type MessageDb interface {
+// MessageDB is an interface for database operations related to messages.
+type MessageDB interface {
 	EnabledClients(uid uint) ([]models.Client, error)
 }
 
-type MessageApi struct {
+type MessageAPI struct {
 	Sender MessageSender
-	DB     MessageDb
+	DB     MessageDB
 }
 
 // CreateMessage is a handler function for creating and sending a message.
-func (a *MessageApi) CreateMessage(c *gin.Context) {
+func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	// Extract the 'message' parameter from the HTTP POST request form.
 	message := c.PostForm("message")
 	if message == "" {

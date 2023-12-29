@@ -17,7 +17,7 @@ type ClientDB interface {
 	UpdateClient(uid uint, client models.ClientResponse) error
 }
 
-type ClientApi struct {
+type ClientAPI struct {
 	DB ClientDB
 }
 
@@ -28,7 +28,7 @@ type ClientInput struct {
 }
 
 // CreateClient is a handler function for creating a new client.
-func (a *ClientApi) CreateClient(c *gin.Context) {
+func (a *ClientAPI) CreateClient(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	uid := c.GetUint("user_id")
 	if uid == 0 {
@@ -61,7 +61,7 @@ func (a *ClientApi) CreateClient(c *gin.Context) {
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
 
-func (a *ClientApi) Clients(c *gin.Context) {
+func (a *ClientAPI) Clients(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -76,7 +76,7 @@ func (a *ClientApi) Clients(c *gin.Context) {
 	c.JSON(http.StatusOK, clients)
 }
 
-func (a *ClientApi) DeleteClient(c *gin.Context) {
+func (a *ClientAPI) DeleteClient(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -97,7 +97,7 @@ func (a *ClientApi) DeleteClient(c *gin.Context) {
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
 
-func (a *ClientApi) UpdateClient(c *gin.Context) {
+func (a *ClientAPI) UpdateClient(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
