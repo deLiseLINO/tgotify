@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	models "tgotify/storage"
 
@@ -14,7 +15,7 @@ type MessageSender interface {
 
 // MessageDB is an interface for database operations related to messages.
 type MessageDB interface {
-	EnabledClients(uid uint) ([]models.Client, error)
+	EnabledClientsForUser(uid uint) ([]models.Client, error)
 }
 
 type MessageAPI struct {
@@ -39,15 +40,17 @@ func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	}
 
 	// Get a list of enabled clients for the user.
-	clients, err := a.DB.EnabledClients(uid)
+	clients, err := a.DB.EnabledClientsForUser(uid)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	var count int
 	// Iterate over the enabled clients and their associated chats to send the message.
 	for _, client := range clients {
 		for _, chat := range client.Chats {
+			count++
 			if err := a.Sender.SendMessage(client.Token, chat.ChatID, message); err != nil {
 				newErrorResponse(c, http.StatusInternalServerError, err.Error())
 				return
@@ -55,5 +58,7 @@ func (a *MessageAPI) CreateMessage(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, statusResponse{"ok"})
+	c.JSON(http.StatusOK, statusResponse{
+		fmt.Sprintf("Succesufully send to %d chats", count),
+	})
 }

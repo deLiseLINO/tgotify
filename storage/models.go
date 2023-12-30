@@ -27,7 +27,6 @@ type Client struct {
 
 type Chat struct {
 	gorm.Model
-	Name     string
 	Enabled  bool `gorm:"not null;default:true"`
 	ChatID   uint `gorm:"unique;not null"`
 	ClientID uint `gorm:"foreignkey:ClientID;constraint:OnDelete:CASCADE"`

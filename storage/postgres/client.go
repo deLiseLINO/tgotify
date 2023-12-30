@@ -8,8 +8,8 @@ func (db *Gormdb) CreateClient(client models.Client) error {
 	return db.Create(&client).Error
 }
 
-// Returns Clients with enabled tokents and enabled chats
-func (db *Gormdb) EnabledClients(uid uint) ([]models.Client, error) {
+// Returns Clients with enabled tokens and enabled chats for user
+func (db *Gormdb) EnabledClientsForUser(uid uint) ([]models.Client, error) {
 	clients := []models.Client{}
 	err := db.
 		Joins("JOIN chats ON clients.id = chats.client_id").
@@ -17,6 +17,15 @@ func (db *Gormdb) EnabledClients(uid uint) ([]models.Client, error) {
 		Preload("Chats").
 		Find(&clients).Error
 	return clients, err
+}
+
+func (db *Gormdb) EnabledTokens() ([]string, error) {
+	var tokens []string
+	err := db.Table("clients").
+		Select("token").
+		Where("clients.enabled = ?", true).
+		Pluck("clients.token", &tokens).Error
+	return tokens, err
 }
 
 func (db *Gormdb) Clients(uid uint) (*[]models.ClientResponse, error) {
