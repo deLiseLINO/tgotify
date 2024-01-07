@@ -14,10 +14,15 @@ const MainBackground = styled.div`
 `;
 
 
-const MainPage = () => {
+const MainPage = ({isAuth}) => {
+
+    const getAuth = (date) => {
+        isAuth(date)
+      };
+
     return (
         <MainBackground>
-            <MainWindow />
+            <MainWindow props={getAuth}/>
         </MainBackground>
     );
 };

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import AuthorizationPage from "../AuthorizationPage/AuthorizationPage";
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import MainPage from "../MainPage/MainPage";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
 import { jwtDecode } from "jwt-decode";
@@ -34,7 +34,7 @@ function App() {
       <Route path="/*" element={<NotFoundPage />} />
 
       {isAuth ? (
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<MainPage isAuth={getAuth}/>} />
       ) : (
         <Route path="/" element={<AuthorizationPage isAuth={getAuth} />} />
       )}
