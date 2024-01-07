@@ -6,6 +6,7 @@ import (
 	telegram "tgotify/client"
 	"tgotify/storage/postgres"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
@@ -16,19 +17,7 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	// Initialize the Gin router with default settings.
 	r := gin.Default()
 
-	r.Use(func(c *gin.Context) {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
-		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
-		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
-
-		if c.Request.Method == "OPTIONS" {
-			c.AbortWithStatus(200)
-			return
-		}
-
-		c.Next()
-	})
+	r.Use(cors.Default())
 
 	// Create instances of API handlers, passing the Telegram client and the database connection.
 	messageHandler := handlers.MessageAPI{Sender: tg, DB: db}
