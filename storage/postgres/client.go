@@ -19,13 +19,13 @@ func (db *Gormdb) EnabledClientsForUser(uid uint) ([]models.Client, error) {
 	return clients, err
 }
 
-func (db *Gormdb) EnabledTokens() ([]string, error) {
-	var tokens []string
+func (db *Gormdb) EnabledClients() ([]models.EnabledClientsResponse, error) {
+	var clients []models.EnabledClientsResponse
 	err := db.Table("clients").
-		Select("token").
+		Select("id, token").
 		Where("clients.enabled = ?", true).
-		Pluck("clients.token", &tokens).Error
-	return tokens, err
+		Find(&clients).Error
+	return clients, err
 }
 
 func (db *Gormdb) Clients(uid uint) (*[]models.ClientResponse, error) {
@@ -38,7 +38,7 @@ func (db *Gormdb) Clients(uid uint) (*[]models.ClientResponse, error) {
 }
 
 func (db *Gormdb) DeleteClient(uid uint, id uint) error {
-	return db.Where("user_id = ?", uid).First(&models.Client{}).Delete(&models.Client{}, id).Error
+	return db.Where("user_id = ? AND id = ?", uid, id).Delete(&models.Client{}).Error
 }
 
 func (db *Gormdb) UpdateClient(uid uint, client models.ClientResponse) error {

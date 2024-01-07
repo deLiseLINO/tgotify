@@ -12,13 +12,11 @@ import (
 )
 
 func main() {
-	// Initialize the configuration from the config package.
 	cfg := config.Init()
 
-	// Create a new PostgreSQL database connection using the configuration.
 	db := postgres.New(&cfg.Storage)
 
-	tokens, err := db.EnabledTokens()
+	tokens, err := db.EnabledClients()
 	if err != nil {
 		logrus.Fatal("Unable to get tokens from db", err)
 	}
@@ -33,6 +31,5 @@ func main() {
 		consumer.Start()
 	}()
 
-	// Create and start the API server.
 	api.CreateRouter(tg, db)
 }

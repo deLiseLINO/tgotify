@@ -9,7 +9,7 @@ import (
 )
 
 type TokensUpdater interface {
-	UpdateTokens() error
+	UpdateClients() error
 }
 
 // ClientDB is an interface for database operations related to clients.
@@ -63,7 +63,7 @@ func (a *ClientAPI) CreateClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateTokens()
+	a.TokensUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
@@ -102,7 +102,7 @@ func (a *ClientAPI) DeleteClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateTokens()
+	a.TokensUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
@@ -135,7 +135,7 @@ func (a *ClientAPI) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateTokens()
+	a.TokensUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }

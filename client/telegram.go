@@ -8,19 +8,20 @@ import (
 	"net/url"
 	"path"
 	"strconv"
+	models "tgotify/storage"
 
 	"github.com/sirupsen/logrus"
 )
 
 type TokensGetter interface {
-	EnabledTokens() ([]string, error)
+	EnabledClients() ([]models.EnabledClientsResponse, error)
 }
 
 // Client represents a client for interacting with the Telegram Bot API.
 type Client struct {
 	host      string
 	client    http.Client
-	tokens    []string
+	tgClients []models.EnabledClientsResponse
 	tokensSvc TokensGetter
 }
 
@@ -29,11 +30,15 @@ const (
 	updateMethod      = "getUpdates"
 )
 
-func New(host string, tokens []string, tokensSvc TokensGetter) *Client {
+func New(
+	host string,
+	tgClients []models.EnabledClientsResponse,
+	tokensSvc TokensGetter,
+) *Client {
 	return &Client{
 		host:      host,
 		client:    http.Client{},
-		tokens:    tokens,
+		tgClients: tgClients,
 		tokensSvc: tokensSvc,
 	}
 }
@@ -56,10 +61,10 @@ func (c *Client) SendMessage(token string, chatID uint, message string) error {
 // Update retrieves updates from the Telegram Bot API.
 func (c *Client) Updates(offset int, limit int) []Update {
 	var res []Update
-	for _, token := range c.tokens {
-		updates, err := c.update(offset, limit, token)
+	for _, client := range c.tgClients {
+		updates, err := c.update(offset, limit, client)
 		if err != nil {
-			logrus.Error("Unable to get updates from token: ", token)
+			logrus.Error("Unable to get updates from token: ", client)
 			continue
 		}
 		res = append(res, updates...)
@@ -67,18 +72,22 @@ func (c *Client) Updates(offset int, limit int) []Update {
 	return res
 }
 
-func (c *Client) UpdateTokens() error {
-	tokens, err := c.tokensSvc.EnabledTokens()
-	c.tokens = tokens
+func (c *Client) UpdateClients() error {
+	clients, err := c.tokensSvc.EnabledClients()
+	c.tgClients = clients
 	return err
 }
 
-func (c *Client) update(offset int, limit int, token string) ([]Update, error) {
+func (c *Client) update(
+	offset int,
+	limit int,
+	tgClient models.EnabledClientsResponse,
+) ([]Update, error) {
 	q := url.Values{}
 	q.Add("offset", strconv.Itoa(offset))
 	q.Add("limit", strconv.Itoa(limit))
 
-	basePath := c.setToken(token)
+	basePath := c.setToken(tgClient.Token)
 	body, err := c.doRequest(updateMethod, q, basePath)
 
 	if err != nil {
@@ -91,8 +100,9 @@ func (c *Client) update(offset int, limit int, token string) ([]Update, error) {
 		return nil, fmt.Errorf("unable to get updated: %w", err)
 	}
 
-	for _, upd := range res.Updates {
-		upd.ClientToken = token
+	for i := range res.Updates {
+		res.Updates[i].ClientToken = tgClient.Token
+		res.Updates[i].ClientID = tgClient.ID
 	}
 
 	return res.Updates, nil

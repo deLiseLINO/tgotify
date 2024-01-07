@@ -41,7 +41,7 @@ func (p *Processor) Fetch(limit int) ([]telegram.Update, error) {
 }
 
 func (p *Processor) ProcessMessage(upd telegram.Update) error {
-	return p.doCmd(upd.Message.Text, upd.Message.Chat.ID, upd.Message.From.Username, upd.ClientToken)
+	return p.doCmd(upd)
 }
 
 const (
@@ -50,48 +50,56 @@ const (
 	UnsubscribeCmd = "/unsubscribe"
 )
 
-func (p *Processor) doCmd(text string, chatID int, username string, token string) error {
-	text = strings.TrimSpace(text)
+func (p *Processor) doCmd(upd telegram.Update) error {
+	if upd.Message == nil {
+		return nil
+	}
+	text := strings.TrimSpace(upd.Message.Text)
 
-	logrus.Printf("got a new message '%s' from '%s'", text, username)
+	logrus.Infof("got a new message '%s' from '%s'", text, upd.Message.From.Username)
 
 	switch text {
-	// case StartCmd:
-	// 	return p.sendHello(chatID, token)
-	// case SubscribeCmd:
-	// 	return p.subscribe(chatID, token)
-	// case UnsubscribeCmd:
-	// 	return p.unSubscribe(chatID, token)
+	case StartCmd:
+		return p.sendHello(upd)
+	case SubscribeCmd:
+		return p.subscribe(upd.Message.Chat.ID, upd.ClientToken)
+	case UnsubscribeCmd:
+		return p.unSubscribe(upd.Message.Chat.ID, upd.ClientToken)
 	default:
 		return nil
 	}
 
 }
 
-// func (p *Processor) sendHello(chatID int, token string) error {
+func (p *Processor) sendHello(upd telegram.Update) error {
+	err := p.tg.SendMessage(upd.ClientToken, uint(upd.Message.Chat.ID), "hello")
+	if err != nil {
+		return err
+	}
 
-// 	err := p.tg.SendMessage(token, uint(chatID), "hello")
-// 	if err != nil {
-// 		return err
-// 	}
+	chat := models.Chat{
+		ChatID:   uint(upd.Message.Chat.ID),
+		ClientID: uint(upd.ClientID),
+		Enabled:  true,
+	}
 
-// 	return p.chatSvc.Enable(chatID)
-// }
+	return p.chatSvc.CreateChat(chat)
+}
 
-// func (p *Processor) subscribe(chatID int, token string) error {
-// 	err := p.chatSvc.Enable(chatID)
-// 	if err != nil {
-// 		return err
-// 	}
+func (p *Processor) subscribe(chatID int, token string) error {
+	err := p.chatSvc.Enable(chatID)
+	if err != nil {
+		return err
+	}
 
-// 	return p.tg.SendMessage(token, uint(chatID), "subed")
-// }
+	return p.tg.SendMessage(token, uint(chatID), "subed")
+}
 
-// func (p *Processor) unSubscribe(chatID int, token string) error {
-// 	err := p.chatSvc.Disable(chatID)
-// 	if err != nil {
-// 		return err
-// 	}
+func (p *Processor) unSubscribe(chatID int, token string) error {
+	err := p.chatSvc.Disable(chatID)
+	if err != nil {
+		return err
+	}
 
-// 	return p.tg.SendMessage(token, uint(chatID), "unsubed")
-// }
+	return p.tg.SendMessage(token, uint(chatID), "unsubed")
+}

@@ -9,6 +9,7 @@ type Update struct {
 	ID          int              `json:"update_id"`
 	Message     *IncomingMessage `json:"message"`
 	ClientToken string
+	ClientID    int
 }
 
 type IncomingMessage struct {

@@ -17,13 +17,13 @@ type Gormdb struct {
 
 // New creates a new Gormdb instance and initializes the database connection using the provided configuration.
 func New(config *config.StorageConfig) *Gormdb {
-	db := &Gormdb{Connect(config)}
-	db.Sync()
+	db := &Gormdb{connect(config)}
+	db.sync()
 	return db
 }
 
-// Connect establishes a new database connection based on the provided configuration and returns the GORM DB instance.
-func Connect(config *config.StorageConfig) *gorm.DB {
+// connect establishes a new database connection based on the provided configuration and returns the GORM DB instance.
+func connect(config *config.StorageConfig) *gorm.DB {
 	dsn := fmt.Sprintf("host=%s user=%s password=%s dbname=%s port=%d sslmode=%s",
 		config.Host,
 		config.Username,
@@ -42,10 +42,9 @@ func Connect(config *config.StorageConfig) *gorm.DB {
 	return db
 }
 
-// Sync ensures that the necessary database tables are created or updated to match the defined GORM models.
-func (db *Gormdb) Sync() {
+// sync ensures that the necessary database tables are created or updated to match the defined GORM models.
+func (db *Gormdb) sync() {
 	db.AutoMigrate(&models.User{})
 	db.AutoMigrate(&models.Client{})
-	db.AutoMigrate(&models.Application{})
 	db.AutoMigrate(&models.Chat{})
 }
