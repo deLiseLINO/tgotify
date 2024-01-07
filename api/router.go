@@ -19,6 +19,7 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 
 	config := cors.DefaultConfig()
 	config.AddAllowHeaders("Authorization")
+	config.AllowAllOrigins = true
 	r.Use(cors.New(config))
 
 	// Create instances of API handlers, passing the Telegram client and the database connection.
