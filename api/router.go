@@ -19,7 +19,7 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	// Create instances of API handlers, passing the Telegram client and the database connection.
 	messageHandler := handlers.MessageAPI{Sender: tg, DB: db}
 	userHandler := handlers.UserAPI{DB: db}
-	clientHandler := handlers.ClientAPI{DB: db, TokensUpdater: tg}
+	clientHandler := handlers.ClientAPI{DB: db, ClientsUpdater: tg}
 
 	// Create a group for authenticated routes and add the JWT authentication middleware.
 	auth := gin.Group("")

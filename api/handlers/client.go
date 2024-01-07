@@ -8,7 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type TokensUpdater interface {
+type ClientsUpdater interface {
 	UpdateClients() error
 }
 
@@ -22,8 +22,8 @@ type ClientDB interface {
 }
 
 type ClientAPI struct {
-	DB            ClientDB
-	TokensUpdater TokensUpdater
+	DB             ClientDB
+	ClientsUpdater ClientsUpdater
 }
 
 // ClientInput is a struct used to parse JSON input for creating a client.
@@ -63,7 +63,7 @@ func (a *ClientAPI) CreateClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateClients()
+	a.ClientsUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
@@ -102,7 +102,7 @@ func (a *ClientAPI) DeleteClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateClients()
+	a.ClientsUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
@@ -135,7 +135,7 @@ func (a *ClientAPI) UpdateClient(c *gin.Context) {
 		return
 	}
 
-	a.TokensUpdater.UpdateClients()
+	a.ClientsUpdater.UpdateClients()
 
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
