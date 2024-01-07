@@ -26,7 +26,7 @@ type MessageAPI struct {
 // CreateMessage is a handler function for creating and sending a message.
 func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	type Message struct {
-		Text string
+		Text string `json:"text"`
 	}
 	message := Message{}
 	// Extract the 'message' parameter from the HTTP POST request form.
