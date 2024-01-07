@@ -19,6 +19,9 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 
 	r.Use(cors.Default())
 
+	config := cors.DefaultConfig()
+	config.AddAllowHeaders("Authorization")
+
 	// Create instances of API handlers, passing the Telegram client and the database connection.
 	messageHandler := handlers.MessageAPI{Sender: tg, DB: db}
 	userHandler := handlers.UserAPI{DB: db}
