@@ -9,12 +9,13 @@ type User struct {
 	Admin    bool
 }
 
-type Application struct {
-	gorm.Model
-	Name   string
-	Token  string
-	UserID uint `gorm:"foreignkey:UserID;constraint:OnDelete:CASCADE"`
-}
+// Not using for now
+// type Application struct {
+// 	gorm.Model
+// 	Name   string
+// 	Token  string
+// 	UserID uint `gorm:"foreignkey:UserID;constraint:OnDelete:CASCADE"`
+// }
 
 type Client struct {
 	gorm.Model
@@ -27,7 +28,6 @@ type Client struct {
 
 type Chat struct {
 	gorm.Model
-	Name     string
 	Enabled  bool `gorm:"not null;default:true"`
 	ChatID   uint `gorm:"unique;not null"`
 	ClientID uint `gorm:"foreignkey:ClientID;constraint:OnDelete:CASCADE"`
@@ -38,4 +38,9 @@ type ClientResponse struct {
 	Name    string `json:"name"`
 	Token   string `json:"token"`
 	Enabled string `json:"enabled"`
+}
+
+type EnabledClientsResponse struct {
+	ID    int
+	Token string
 }

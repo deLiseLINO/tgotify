@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"net/http"
 	models "tgotify/storage"
 
@@ -12,18 +13,18 @@ type MessageSender interface {
 	SendMessage(token string, chatID uint, message string) error
 }
 
-// MessageDb is an interface for database operations related to messages.
-type MessageDb interface {
-	EnabledClients(uid uint) ([]models.Client, error)
+// MessageDB is an interface for database operations related to messages.
+type MessageDB interface {
+	EnabledClientsForUser(uid uint) ([]models.Client, error)
 }
 
-type MessageApi struct {
+type MessageAPI struct {
 	Sender MessageSender
-	DB     MessageDb
+	DB     MessageDB
 }
 
 // CreateMessage is a handler function for creating and sending a message.
-func (a *MessageApi) CreateMessage(c *gin.Context) {
+func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	// Extract the 'message' parameter from the HTTP POST request form.
 	message := c.PostForm("message")
 	if message == "" {
@@ -39,15 +40,17 @@ func (a *MessageApi) CreateMessage(c *gin.Context) {
 	}
 
 	// Get a list of enabled clients for the user.
-	clients, err := a.DB.EnabledClients(uid)
+	clients, err := a.DB.EnabledClientsForUser(uid)
 	if err != nil {
 		newErrorResponse(c, http.StatusInternalServerError, err.Error())
 		return
 	}
 
+	var count int
 	// Iterate over the enabled clients and their associated chats to send the message.
 	for _, client := range clients {
 		for _, chat := range client.Chats {
+			count++
 			if err := a.Sender.SendMessage(client.Token, chat.ChatID, message); err != nil {
 				newErrorResponse(c, http.StatusInternalServerError, err.Error())
 				return
@@ -55,5 +58,7 @@ func (a *MessageApi) CreateMessage(c *gin.Context) {
 		}
 	}
 
-	c.JSON(http.StatusOK, statusResponse{"ok"})
+	c.JSON(http.StatusOK, statusResponse{
+		fmt.Sprintf("Succesufully send to %d chats", count),
+	})
 }

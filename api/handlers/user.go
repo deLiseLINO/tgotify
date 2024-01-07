@@ -18,8 +18,8 @@ type userDB interface {
 	ChangePassword(uid uint, pass string) error
 }
 
-// UserApi is a handler for user-related operations.
-type UserApi struct {
+// UserAPI is a handler for user-related operations.
+type UserAPI struct {
 	DB userDB
 }
 
@@ -29,7 +29,7 @@ type userInput struct {
 	Password string `json:"pass" binding:"required"`
 }
 
-func (a *UserApi) User(c *gin.Context) {
+func (a *UserAPI) User(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	uid := c.GetUint("user_id")
 	if uid == 0 {
@@ -50,7 +50,7 @@ func (a *UserApi) User(c *gin.Context) {
 }
 
 // CreateUser handles the creation of a new user.
-func (a *UserApi) CreateUser(c *gin.Context) {
+func (a *UserAPI) CreateUser(c *gin.Context) {
 	// Parse the JSON input data.
 	var userI userInput
 	err := c.BindJSON(&userI)
@@ -89,7 +89,7 @@ func (a *UserApi) CreateUser(c *gin.Context) {
 }
 
 // DeleteUser handles the deletion of a user's account.
-func (a *UserApi) DeleteUser(c *gin.Context) {
+func (a *UserAPI) DeleteUser(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	uid := c.GetUint("user_id")
 	if uid == 0 {
@@ -108,7 +108,7 @@ func (a *UserApi) DeleteUser(c *gin.Context) {
 }
 
 // Signin handles the user sign-in process.
-func (a *UserApi) Signin(c *gin.Context) {
+func (a *UserAPI) Signin(c *gin.Context) {
 	// Parse the JSON input data for sign-in.
 	var userI userInput
 	err := c.BindJSON(&userI)
@@ -143,7 +143,7 @@ func (a *UserApi) Signin(c *gin.Context) {
 	})
 }
 
-func (a *UserApi) ChangePassword(c *gin.Context) {
+func (a *UserAPI) ChangePassword(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -170,7 +170,8 @@ func (a *UserApi) ChangePassword(c *gin.Context) {
 }
 
 func hashPass(pass string) (string, error) {
-	hash, err := bcrypt.GenerateFromPassword([]byte(pass), 10)
+	const cost = 10
+	hash, err := bcrypt.GenerateFromPassword([]byte(pass), cost)
 	if err != nil {
 		return "", err
 	}

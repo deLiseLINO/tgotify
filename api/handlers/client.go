@@ -8,6 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+type ClientsUpdater interface {
+	UpdateClients() error
+}
+
 // ClientDB is an interface for database operations related to clients.
 type ClientDB interface {
 	CreateClient(client models.Client) error
@@ -17,8 +21,9 @@ type ClientDB interface {
 	UpdateClient(uid uint, client models.ClientResponse) error
 }
 
-type ClientApi struct {
-	DB ClientDB
+type ClientAPI struct {
+	DB             ClientDB
+	ClientsUpdater ClientsUpdater
 }
 
 // ClientInput is a struct used to parse JSON input for creating a client.
@@ -28,7 +33,7 @@ type ClientInput struct {
 }
 
 // CreateClient is a handler function for creating a new client.
-func (a *ClientApi) CreateClient(c *gin.Context) {
+func (a *ClientAPI) CreateClient(c *gin.Context) {
 	// Extract the user ID from the JWT token in the request context.
 	uid := c.GetUint("user_id")
 	if uid == 0 {
@@ -58,10 +63,12 @@ func (a *ClientApi) CreateClient(c *gin.Context) {
 		return
 	}
 
+	a.ClientsUpdater.UpdateClients()
+
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
 
-func (a *ClientApi) Clients(c *gin.Context) {
+func (a *ClientAPI) Clients(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -76,7 +83,7 @@ func (a *ClientApi) Clients(c *gin.Context) {
 	c.JSON(http.StatusOK, clients)
 }
 
-func (a *ClientApi) DeleteClient(c *gin.Context) {
+func (a *ClientAPI) DeleteClient(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -94,10 +101,13 @@ func (a *ClientApi) DeleteClient(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	a.ClientsUpdater.UpdateClients()
+
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
 
-func (a *ClientApi) UpdateClient(c *gin.Context) {
+func (a *ClientAPI) UpdateClient(c *gin.Context) {
 	uid := c.GetUint("user_id")
 	if uid == 0 {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
@@ -124,5 +134,8 @@ func (a *ClientApi) UpdateClient(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
+
+	a.ClientsUpdater.UpdateClients()
+
 	c.JSON(http.StatusOK, statusResponse{"ok"})
 }
