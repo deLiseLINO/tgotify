@@ -25,9 +25,18 @@ type MessageAPI struct {
 
 // CreateMessage is a handler function for creating and sending a message.
 func (a *MessageAPI) CreateMessage(c *gin.Context) {
+	type Message struct {
+		Text string
+	}
+	message := Message{}
 	// Extract the 'message' parameter from the HTTP POST request form.
-	message := c.PostForm("message")
-	if message == "" {
+	err := c.BindJSON(&message)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	if message.Text == "" {
 		newErrorResponse(c, http.StatusBadRequest, "missing `message` parameter")
 		return
 	}
@@ -51,7 +60,7 @@ func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	for _, client := range clients {
 		for _, chat := range client.Chats {
 			count++
-			if err := a.Sender.SendMessage(client.Token, chat.ChatID, message); err != nil {
+			if err := a.Sender.SendMessage(client.Token, chat.ChatID, message.Text); err != nil {
 				newErrorResponse(c, http.StatusInternalServerError, err.Error())
 				return
 			}
