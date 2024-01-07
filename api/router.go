@@ -17,10 +17,9 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	// Initialize the Gin router with default settings.
 	r := gin.Default()
 
-	r.Use(cors.Default())
-
 	config := cors.DefaultConfig()
 	config.AddAllowHeaders("Authorization")
+	r.Use(cors.New(config))
 
 	// Create instances of API handlers, passing the Telegram client and the database connection.
 	messageHandler := handlers.MessageAPI{Sender: tg, DB: db}
