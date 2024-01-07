@@ -14,7 +14,21 @@ import (
 // CreateRouter initializes and configures the Gin router.
 func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	// Initialize the Gin router with default settings.
-	gin := gin.Default()
+	r := gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(200)
+			return
+		}
+
+		c.Next()
+	})
 
 	// Create instances of API handlers, passing the Telegram client and the database connection.
 	messageHandler := handlers.MessageAPI{Sender: tg, DB: db}
@@ -22,7 +36,7 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	clientHandler := handlers.ClientAPI{DB: db, ClientsUpdater: tg}
 
 	// Create a group for authenticated routes and add the JWT authentication middleware.
-	auth := gin.Group("")
+	auth := r.Group("")
 	auth.Use(authentication.JwtAuthMiddleware())
 
 	// Define authenticated routes with corresponding HTTP methods and handler functions.
@@ -38,8 +52,8 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 	auth.POST("/user/password", userHandler.ChangePassword) // Change user's password
 
 	// Define unauthenticated routes.
-	gin.POST("/user", userHandler.CreateUser)    // Create a new user
-	gin.POST("/user/signin", userHandler.Signin) // User sign-in
+	r.POST("/user", userHandler.CreateUser)    // Create a new user
+	r.POST("/user/signin", userHandler.Signin) // User sign-in
 
 	// Retrieve the router port from the configuration using Viper.
 	port := viper.GetString("router.port")
@@ -47,7 +61,7 @@ func CreateRouter(tg *telegram.Client, db *postgres.Gormdb) {
 		logrus.Fatal("unable to fetch port from config")
 	}
 	// Start the Gin router and listen on the specified port.
-	if err := gin.Run(":" + port); err != nil {
+	if err := r.Run(":" + port); err != nil {
 		logrus.Fatal(err)
 	}
 }
