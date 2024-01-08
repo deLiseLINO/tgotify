@@ -37,7 +37,7 @@ func (a *MessageAPI) CreateMessage(c *gin.Context) {
 	}
 
 	if message.Text == "" {
-		newErrorResponse(c, http.StatusBadRequest, "missing `message` parameter")
+		newErrorResponse(c, http.StatusBadRequest, "missing `text` parameter")
 		return
 	}
 
