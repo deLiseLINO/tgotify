@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"strconv"
 	models "tgotify/storage"
 
 	"github.com/gin-gonic/gin"
@@ -89,14 +88,18 @@ func (a *ClientAPI) DeleteClient(c *gin.Context) {
 		newErrorResponse(c, http.StatusInternalServerError, fetchuid)
 		return
 	}
-	clientIDstr := c.PostForm("id")
-	clientID, err := strconv.ParseUint(clientIDstr, 10, 0)
+	type Client struct {
+		Id int `json:"id"`
+	}
+
+	client := Client{}
+	err := c.BindJSON(&client)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
-	err = a.DB.DeleteClient(uid, uint(clientID))
+	err = a.DB.DeleteClient(uid, uint(client.Id))
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
