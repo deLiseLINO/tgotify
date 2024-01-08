@@ -4,8 +4,7 @@ import styled from "styled-components";
 import person from "../../img/person.svg";
 import LogOut from "../../img/LogOut.svg";
 import Client from "../Client/Client";
-import bin from "../../img/bin.svg";
-import pen from "../../img/pen.svg";
+import ClientSample from "../ClientSample/ClientSample";
 
 const MainBackground = styled.div`
   position: relative;
@@ -82,59 +81,14 @@ const ClientsPlace = styled.div`
   }
 `;
 
-const ClientPerson = styled.div`
-  width: 572px;
-  min-height: 74px;
-
-  gap: 70px;
-
-  justify-content: space-between;
-
-  margin-bottom: 20px;
-  border-radius: 10px;
-  background: #699bf72d;
-
-  padding-left: 20px;
-  padding-right: 20px;
-
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  box-shadow: 4px 4px 10px 0px #f1f6fc;
-  backdrop-filter: blur(6.449999809265137px);
-`;
-
-const ClientName = styled.div`
-  color: #699bf7;
-`;
-
-const ClientToken = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  color: #fff;
-  border-radius: 6px;
-
-  width: 100%;
-  height: 28px;
-  background-color: #699bf7;
-
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 400px;
-`;
-
-const ClientIcons = styled.div`
-  display: flex;
-  gap: 20px;
-`;
-
 const ButtonPlace = styled.div`
   display: flex;
   justify-content: space-between;
   width: 600px;
+
+  height: 46px;
+
+  gap: 40px;
 `;
 
 const ButtonSlyled = styled.button`
@@ -155,16 +109,53 @@ const ButtonSlyled = styled.button`
   }
 `;
 
+const Input = styled.input`
+  display: flex;
+  flex-direction: row;
+
+  width: 100%;
+  padding-left: 16px;
+
+  border-radius: 8px;
+  border: 3px solid #699bf7;
+
+  font-size: 16px;
+`
+
+
+
+//////
+
+
 const MainWindow = (props) => {
   const [arrUsers, setArrUsers] = useState([]);
+  const [inputValue, setInputValue] = useState('');
+  const [itemUpdate, setItemUpdate] = useState(false);
+  const [tooglePersonDateValue, setTooglePersonDateValue] = useState(false);
 
 
-  const openPersonalDate = () => {
-    console.log(1);
+  const handleInputChange = (event) => {
+    setInputValue(event.target.value);
+  };
+
+
+  const peopleSetting = () => {
+    console.log(tooglePersonDateValue);
   }
+
+  const tooglePersonDate = () => {
+    setTooglePersonDateValue(!tooglePersonDateValue)
+  }
+
+
+  const updatePage = (value) =>{
+    setItemUpdate(value)
+  }
+
 
   const moveLogOut = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("name");
     console.log('удлили токен, дальше удачи');
     // props.isAuth(false)
   }
@@ -173,8 +164,10 @@ const MainWindow = (props) => {
     let token = localStorage.getItem("token");
 
     const data = {
-      text: "тестовое сообщение",
+      text: inputValue,
     };
+
+    setInputValue('')
 
     const config = {
       headers: {
@@ -186,8 +179,7 @@ const MainWindow = (props) => {
     axios
       .post("/message", data, config)
       .then((response) => {
-        console.log(response);
-        console.log('Сообщение отправлено');
+        console.log(response.data.status);
       })
       .catch((err) => {
         console.error(err);
@@ -195,6 +187,8 @@ const MainWindow = (props) => {
   };
 
   useEffect(() => {
+    console.log('обновление данных');
+
     let token = localStorage.getItem("token");
 
     axios
@@ -207,44 +201,29 @@ const MainWindow = (props) => {
       .catch((err) => {
         console.error(err);
       });
-  }, []);
+  }, [itemUpdate]);
 
   return (
     <MainBackground>
       <MainSettings />
       <MainSettingsIcons>
-        <Icon onClick={openPersonalDate} src={person} alt="person" />
+        <Icon onClick={peopleSetting} src={person} alt="person" />
         <Icon onClick={moveLogOut} src={LogOut} alt="LogOut" />
       </MainSettingsIcons>
 
       <ButtonPlace>
         <ButtonSlyled onClick={sendMessage}>sendMessage</ButtonSlyled>
-        <ButtonSlyled>Add Client</ButtonSlyled>
+        <Input type="text" value={inputValue} onChange={handleInputChange} placeholder="message..."/>
+        <ButtonSlyled onClick={tooglePersonDate}>Add Client</ButtonSlyled>
       </ButtonPlace>
 
       <ClientsPlace>
-        <ClientPerson>
-          <ClientName>Name</ClientName>
-          <ClientToken>*********</ClientToken>
-          <ClientIcons>
-            <Icon src={pen} alt="pen" />
-            <Icon src={bin} alt="bin" />
-          </ClientIcons>
-        </ClientPerson>
-
+        {tooglePersonDateValue ? <ClientSample update={updatePage}/> : null}
         {arrUsers.map((item) => (
           <Client props={item} />
         ))}
-
-        {/* <Client>
-          <ClientName>Name</ClientName>
-          <ClientToken>*********</ClientToken>
-          <ClientIcons>
-            <Icon src={pen} alt="pen" />
-            <Icon src={bin} alt="bin" />
-          </ClientIcons>
-        </Client> */}
       </ClientsPlace>
+
     </MainBackground>
   );
 };

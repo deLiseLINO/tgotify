@@ -1,5 +1,6 @@
 import React from "react";
 import styled from "styled-components";
+import axios from "../../utils/axios";
 import bin from "../../img/bin.svg";
 import pen from "../../img/pen.svg";
 
@@ -38,6 +39,8 @@ const ClientToken = styled.div`
   color: #fff;
   border-radius: 6px;
 
+  font-size: 12px;
+
   width: 100%;
   height: 28px;
   background-color: #699bf7;
@@ -64,13 +67,45 @@ const Icon = styled.img`
 
 const Client = ({props}) => {
 
+  console.log(props.id);
+
+
+  const deleteClient = (event) =>{
+    console.log('удалил', event);
+
+    // event.target.id
+    // event.target.parentNode <- удалить
+
+    let token = localStorage.getItem("token");
+
+    const config = {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+
+    axios
+    .delete(`/client/${event.target.id}`, config)
+    .then((response) => {
+      console.log(response);
+    })
+    .catch((err) => {
+      console.error(err);
+    });
+
+
+
+  }
+
   return (
     <ClientPerson>
       <ClientName>{props.name}</ClientName>
       <ClientToken>{props.token}</ClientToken>
       <ClientIcons>
         <Icon src={pen} alt="pen" />
-        <Icon src={bin} alt="bin" />
+        <Icon id={props.id} onClick={deleteClient} src={bin} alt="bin" />
       </ClientIcons>
     </ClientPerson>
   );

@@ -137,24 +137,16 @@ const AuthorizationPage = ({isAuth}) => {
     })
     .then((response) => {
       localStorage.setItem('token', response.data.token.toString())
-
-      console.log('мы тут');
-
+      localStorage.setItem('name', user.name)
+      console.log('Registration');
       isAuth(true)
-
-
     })
     .catch((err) => {console.error(err)})
-
-
-    console.log("Registration");
   };
 
 
   const btnAuthorization = (event) => {
     event.preventDefault()
-
-    console.log('авторизировалось');
 
     axios
     .post("/user/signin", {
@@ -163,16 +155,10 @@ const AuthorizationPage = ({isAuth}) => {
     })
     .then((response) => {
       localStorage.setItem('token', response.data.token.toString())
-
-      console.log('мы тут');
-
+      console.log('Authorization');
       isAuth(true)
-
     })
     .catch((err) => {console.error(err)})
-
-
-    console.log("Login");
   };
 
   return (
