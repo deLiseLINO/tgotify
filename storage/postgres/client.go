@@ -38,7 +38,19 @@ func (db *Gormdb) Clients(uid uint) (*[]models.ClientResponse, error) {
 }
 
 func (db *Gormdb) DeleteClient(uid uint, id uint) error {
-	return db.Where("user_id = ? AND id = ?", uid, id).Delete(&models.Client{}).Error
+	var client models.Client
+	err := db.Where("user_id = ? AND id = ?", uid, id).
+		Preload("Chats").
+		First(&client).Error
+	if err != nil {
+		return err
+	}
+
+	if len(client.Chats) > 0 {
+		db.Delete(&client.Chats)
+	}
+
+	return db.Delete(&client).Error
 }
 
 func (db *Gormdb) UpdateClient(uid uint, client models.ClientResponse) error {

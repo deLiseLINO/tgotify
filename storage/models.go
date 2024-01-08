@@ -7,6 +7,7 @@ type User struct {
 	Name     string `gorm:"unique"`
 	Password string
 	Admin    bool
+	Clients  []Client
 }
 
 // Not using for now
