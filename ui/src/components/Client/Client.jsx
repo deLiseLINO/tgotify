@@ -4,7 +4,6 @@ import axios from "../../utils/axios";
 import bin from "../../img/bin.svg";
 import pen from "../../img/pen.svg";
 
-
 const ClientPerson = styled.div`
   width: 572px;
   min-height: 74px;
@@ -59,24 +58,24 @@ const ClientIcons = styled.div`
 const Icon = styled.img`
   cursor: pointer;
 
-  &:hover{
+  &:hover {
     opacity: 0.8;
   }
 `;
 
+const Client = ({ props }) => {
 
-const Client = ({props}) => {
-
-  console.log(props.id);
-
-
-  const deleteClient = (event) =>{
-    console.log('удалил', event);
+  const deleteClient = (event) => {
+    console.log("удалил", event.target.id);
 
     // event.target.id
     // event.target.parentNode <- удалить
 
     let token = localStorage.getItem("token");
+
+    const data = {
+      id: event.target.id
+    };
 
     const config = {
       headers: {
@@ -86,18 +85,37 @@ const Client = ({props}) => {
     };
 
 
+
+
+    const reqSett = {
+      // id: event.target.id, 
+      headers: {
+        id: event.target.id,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+ 
+    // const data = {
+    //   id: event.target.id,
+    // };
+
+    // const config = {
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //     Authorization: `Bearer ${token}`,
+    //   },
+    // };
+
     axios
-    .delete(`/client/${event.target.id}`, config)
-    .then((response) => {
-      console.log(response);
-    })
-    .catch((err) => {
-      console.error(err);
-    });
-
-
-
-  }
+      .delete("/client", { data: { id: Number(event.target.id) }, headers: { "Authorization": `Bearer ${token}` } })
+      .then((response) => {
+        console.log(response);
+      })
+      .catch((err) => {
+        console.error('err',err);
+      });
+  };
 
   return (
     <ClientPerson>

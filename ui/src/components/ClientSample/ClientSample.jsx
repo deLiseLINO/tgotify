@@ -90,7 +90,6 @@ const ClientSample = ({update}) => {
   };
 
   const addNewUser = () => {
-    console.log(user);
 
     let token = localStorage.getItem("token");
 
